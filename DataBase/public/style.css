@@ -1,0 +1,106 @@
+/* 全局樣式 */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    transition: background-color 0.5s ease;
+    /* 平滑背景顏色過渡 */
+}
+
+body.login-active {
+    background: linear-gradient(to bottom, #4facfe, #00f2fe);
+    /* 藍色漸層 */
+}
+
+body.register-active {
+    background: linear-gradient(to bottom, #ff7e5f, #feb47b);
+    /* 橘紅色漸層 */
+}
+
+/* 表單容器 */
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.form-box {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.9);
+    /* 白色半透明背景 */
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 300px;
+    width: 100%;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    /* 平滑過渡 */
+    z-index: 1;
+}
+
+.form-box.active {
+    opacity: 1;
+    transform: scale(1);
+    z-index: 2;
+}
+
+.form-box h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.form-box input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    /* 確保 padding 不會影響寬度 */
+}
+
+.form-box button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4facfe;
+    /* 預設按鈕為藍色 */
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    box-sizing: border-box;
+    /* 確保 padding 不會影響寬度 */
+}
+
+.form-box button:hover {
+    background-color: #00f2fe;
+}
+
+.toggle-link {
+    color: #4facfe;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* 動態背景過渡 */
+body.login-active .form-box.register-box {
+    z-index: 1;
+}
+
+body.register-active .form-box.login-box {
+    z-index: 1;
+}

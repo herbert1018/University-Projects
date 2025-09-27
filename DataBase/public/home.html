@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交易網站</title>
+    <link rel="stylesheet" href="home_style.css">
+    <script>
+        // 儲存當前登入的用戶名稱
+        let currentUsername = '';
+
+        // 確認用戶是否已經登入
+        async function checkLogin() {
+            try {
+                const response = await fetch('/check-login');
+                const data = await response.json();
+                if (data.loggedIn) {
+                    currentUsername = data.username; // 儲存當前登入的用戶名稱
+                    document.getElementById('username').textContent = `歡迎，${currentUsername}`;
+                    loadUserInfo(currentUsername); // 載入用戶基本資料
+                    loadWarehouseProducts(); // 載入倉庫商品列表
+                } else {
+                    alert('尚未登入，請先登入');
+                    window.location.href = 'login_register.html'; // 跳轉至登入頁
+                }
+            } catch (error) {
+                console.error('登入檢查失敗：', error);
+                alert('伺服器錯誤，請稍後重試');
+            }
+        }
+
+        async function loadUserInfo(username) {
+            try {
+                const response = await fetch(`/user-info/${username}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP 错误：${response.status}`);  // 输出 HTTP 错误状态
+                }
+                const data = await response.json();
+                console.log('用户数据：', data);  // 打印返回的数据
+
+                document.getElementById('userBalance').textContent = `餘額: ${data.balance || 0} 元`;
+                document.getElementById('userEmail').textContent = `電子郵件: ${data.email || '未設定'}`;
+                document.getElementById('userPhone').textContent = `電話: ${data.phone || '未設定'}`;
+                document.getElementById('userAddress').textContent = `收貨地址: ${data.address || '未設定'}`;
+            } catch (error) {
+                console.error('載入用戶資料失敗：', error);
+                alert('無法載入用戶資料');
+            }
+        }
+
+        // 切換頁面顯示
+        function switchPage(page) {
+            const pages = document.querySelectorAll('.page');
+            const buttons = document.querySelectorAll('.tabs button'); // 取得所有頁籤按鈕
+
+            // 隱藏所有頁面
+            pages.forEach(p => p.style.display = 'none');
+
+            // 顯示選中的頁面
+            document.getElementById(page).style.display = 'block';
+
+            // 重設所有按鈕的顏色和文字顏色
+            buttons.forEach(button => {
+                button.style.backgroundColor = ''; // 清除背景顏色
+                button.style.color = ''; // 清除文字顏色
+            });
+
+            // 設置當前選中頁面的按鈕顏色和文字顏色
+            const activeButton = document.querySelector(`button[onclick="switchPage('${page}')"]`);
+            if (activeButton) {
+                activeButton.style.backgroundColor = '#61adf0'; // 設置選中頁面的按鈕顏色
+                activeButton.style.color = '#ffffff'; // 設置選中頁面的文字顏色
+            }
+        }
+
+        // 編輯個人資料
+        function editProfile() {
+            document.getElementById('profileView').style.display = 'none';
+            document.getElementById('profileEdit').style.display = 'block';
+
+            // 將現有的個人資料填入輸入框中
+            document.getElementById('editEmail').value = document.getElementById('userEmail').textContent.replace('電子郵件: ', '');
+            document.getElementById('editPhone').value = document.getElementById('userPhone').textContent.replace('電話: ', '');
+            document.getElementById('editAddress').value = document.getElementById('userAddress').textContent.replace('收貨地址: ', '');
+        }
+
+        // 取消編輯
+        function cancelEdit() {
+            document.getElementById('profileView').style.display = 'block';
+            document.getElementById('profileEdit').style.display = 'none';
+        }
+
+        // 更新個人資料
+        async function updateProfile() {
+            const email = document.getElementById('editEmail').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const address = document.getElementById('editAddress').value.trim();
+
+            try {
+                const response = await fetch('/update-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUsername, email, phone, address })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('個人資料更新成功');
+                    loadUserInfo(currentUsername); // 重新載入個人資料
+                    cancelEdit(); // 返回檢視狀態
+                } else {
+                    alert(data.message || '個人資料更新失敗');
+                }
+            } catch (error) {
+                console.error('個人資料更新失敗：', error);
+                alert('伺服器錯誤，無法更新個人資料');
+            }
+        }
+
+        // 保存個人資料
+        function saveProfile() {
+            updateProfile();
+        }
+
+        // 取消編輯個人資料
+        function cancelEditProfile() {
+            cancelEdit();
+        }
+
+        // 購買商品
+        async function buyProduct(productId, productPrice) {
+            const quantityInput = document.getElementById(`buyQuantity_${productId}`);
+            const quantity = parseInt(quantityInput.value);
+
+            try {
+                const response = await fetch('/buy-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, quantity, productPrice })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`購買成功，賣家: ${data.seller}`);
+                    loadUserInfo(currentUsername); // 更新用戶餘額
+                    loadProducts(); // 更新商品列表
+                    loadWarehouseProducts(); // 更新倉庫商品列表
+                } else {
+                    alert(data.message || '購買失敗');
+                }
+            } catch (error) {
+                console.error('購買商品失敗：', error);
+                alert('伺服器錯誤，無法購買商品');
+            }
+        }
+
+        // 載入倉庫商品列表
+        async function loadWarehouseProducts() {
+            try {
+                const response = await fetch('/get-warehouse-products');
+                if (!response.ok) throw new Error('無法取得倉庫商品列表');
+                const products = await response.json();
+
+                const warehouseList = document.getElementById('warehouseList');
+                const noWarehouseProductsMessage = document.getElementById('noWarehouseProductsMessage');
+                const noWarehouseProductsSearchMessage = document.getElementById('noWarehouseProductsSearchMessage');
+                warehouseList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noWarehouseProductsMessage.style.display = 'block';
+                    noWarehouseProductsSearchMessage.style.display = 'none';
+                } else {
+                    noWarehouseProductsMessage.style.display = 'none';
+                    noWarehouseProductsSearchMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>數量: ${product.quantity}</p>
+                        <button onclick="showEditProductForm('${product.product_name}', ${product.quantity})">編輯</button>
+                        <button onclick="showListProductForm('${product.product_name}', ${product.quantity})">上架</button>
+                        <button class="button delete-button" onclick="deleteWarehouseProduct('${product.product_name}')">刪除</button>
+                    `;
+                        warehouseList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('載入倉庫商品列表失敗：', error);
+                alert('無法載入倉庫商品列表');
+            }
+        }
+
+        // 上傳商品
+        async function uploadProduct() {
+            const productName = document.getElementById('productName').value.trim();
+            const quantity = document.getElementById('productQuantity').value.trim();
+
+            if (!productName || !quantity) {
+                alert('請填寫完整的商品資料');
+                return;
+            }
+
+            // 使用 parseInt 解析數量，確保是整數
+            const parsedQuantity = parseInt(quantity);
+            if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+                alert('請輸入有效的數量');
+                return;
+            }
+
+            try {
+                const response = await fetch('/add-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        quantity: parsedQuantity,
+                        seller_username: currentUsername // 使用當前登入的用戶名稱作為賣家名稱
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('商品上傳成功！');
+                    hideUploadProductForm(); // 關閉上傳商品表單彈出視窗
+                    loadWarehouseProducts(); // 重新載入倉庫商品列表
+                    loadSellingProducts(); // 重新載入販售中的商品列表
+                } else {
+                    alert(data.message || '商品上傳失敗');
+                }
+            } catch (error) {
+                console.error('商品上傳失敗：', error);
+                alert('伺服器錯誤，無法上傳商品');
+            }
+        }
+
+        // 載入商品列表
+        async function loadProducts() {
+            try {
+                const response = await fetch('/get-products');
+                if (!response.ok) throw new Error('無法取得商品列表');
+                const products = await response.json();
+
+                const productList = document.getElementById('productList');
+                const noProductsMessage = document.getElementById('noProductsMessage');
+                productList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noProductsMessage.style.display = 'block';
+                } else {
+                    noProductsMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>價格: ${product.price} 元</p>
+                        <p>剩餘數量: ${product.quantity}</p>
+                        <p>賣家: ${product.seller_username}</p>
+                        <label for="buyQuantity_${product.product_id}">購買數量:</label>
+                        <input type="number" id="buyQuantity_${product.product_id}" min="1" max="${product.quantity}" value="1">
+                        <button onclick="buyProduct(${product.product_id}, ${product.price})">購買</button>
+                    `;
+                        productList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('載入商品列表失敗：', error);
+                alert('無法載入商品列表');
+            }
+        }
+
+        // 刪除私人倉庫商品
+        async function deleteWarehouseProduct(productName) {
+            try {
+                const response = await fetch('/delete-warehouse-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        seller_username: currentUsername // 使用當前登入的用戶名稱作為賣家名稱
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('商品刪除成功！');
+                    loadWarehouseProducts(); // 重新載入倉庫商品列表
+                } else {
+                    alert(data.message || '商品刪除失敗');
+                }
+            } catch (error) {
+                console.error('商品刪除失敗：', error);
+                alert('伺服器錯誤，無法刪除商品');
+            }
+        }
+
+        // 顯示編輯商品表單
+        function showEditProductForm(productName, quantity) {
+            document.getElementById('editProductForm').style.display = 'block';
+            document.getElementById('editProductName').value = productName;
+            document.getElementById('editProductQuantity').value = quantity;
+            document.getElementById('originalProductName').value = productName;
+        }
+
+        // 隱藏編輯商品表單
+        function hideEditProductForm() {
+            document.getElementById('editProductForm').style.display = 'none';
+        }
+
+        // 編輯商品
+        async function editProduct() {
+            const originalProductName = document.getElementById('originalProductName').value;
+            const productName = document.getElementById('editProductName').value.trim();
+            const quantity = document.getElementById('editProductQuantity').value.trim();
+
+            if (!productName || !quantity) {
+                alert('請填寫完整的商品資料');
+                return;
+            }
+
+            // 使用 parseFloat 解析價格，確保是浮動數字
+            const parsedQuantity = parseInt(quantity);
+            if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+                alert('請輸入有效的數量');
+                return;
+            }
+
+            try {
+                const response = await fetch('/edit-warehouse-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        original_product_name: originalProductName,
+                        product_name: productName,
+                        quantity: parsedQuantity,
+                        seller_username: currentUsername // 使用當前登入的用戶名稱作為賣家名稱
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message);
+                    hideEditProductForm(); // 關閉編輯商品表單
+                    loadWarehouseProducts(); // 重新載入倉庫商品列表
+                } else {
+                    alert(data.message || '商品更新失敗');
+                }
+            } catch (error) {
+                console.error('商品更新失敗：', error);
+                alert('伺服器錯誤，無法更新商品');
+            }
+        }
+
+        // 上架商品
+        async function listProduct() {
+            const productName = document.getElementById('listProductName').value;
+            const quantity = document.getElementById('listProductQuantity').value;
+            const price = document.getElementById('listProductPrice').value;
+
+            if (!quantity || !price) {
+                alert('請填寫完整的商品資料');
+                return;
+            }
+
+            const parsedQuantity = parseInt(quantity);
+            const parsedPrice = parseFloat(price);
+
+            if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+                alert('請輸入有效的數量');
+                return;
+            }
+
+            if (isNaN(parsedPrice) || parsedPrice <= 0) {
+                alert('請輸入有效的價格');
+                return;
+            }
+
+            try {
+                const response = await fetch('/list-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        quantity: parsedQuantity,
+                        price: parsedPrice,
+                        seller_username: currentUsername // 使用當前登入的用戶名稱作為賣家名稱
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('商品上架成功！');
+                    hideListProductForm(); // 關閉上架商品表單彈出視窗
+                    loadWarehouseProducts(); // 重新載入倉庫商品列表
+                    loadSellingProducts(); // 重新載入販售中的商品列表
+                } else {
+                    alert(data.message || '商品上架失敗');
+                }
+            } catch (error) {
+                console.error('商品上架失敗：', error);
+                alert('伺服器錯誤，無法上架商品');
+            }
+        }
+
+        // 下架商品
+        async function unlistProduct(productName, quantity, price) {
+            try {
+                const response = await fetch('/unlist-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        quantity: quantity,
+                        price: price,
+                        seller_username: currentUsername // 使用當前登入的用戶名稱作為賣家名稱
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('商品下架成功！');
+                    loadWarehouseProducts(); // 重新載入倉庫商品列表
+                    loadSellingProducts(); // 重新載入販售中的商品列表
+                } else {
+                    alert(data.message || '商品下架失敗');
+                }
+            } catch (error) {
+                console.error('商品下架失敗：', error);
+                alert('伺服器錯誤，無法下架商品');
+            }
+        }
+
+        // 排序倉庫商品
+        async function sortWarehouseProducts(order) {
+            const criteria = document.getElementById('sortCriteria').value;
+            try {
+                const response = await fetch(`/get-warehouse-products?sortCriteria=${criteria}&sortOrder=${order}`);
+                if (!response.ok) throw new Error('無法取得倉庫商品列表');
+                const products = await response.json();
+
+                const warehouseList = document.getElementById('warehouseList');
+                warehouseList.innerHTML = ''; // 清空現有內容
+                products.forEach(product => {
+                    const productItem = document.createElement('div');
+                    productItem.className = 'product-item';
+                    productItem.innerHTML = `
+                            <p data-criteria="product_name">商品名稱: ${product.product_name}</p>
+                            <p data-criteria="quantity">數量: ${product.quantity}</p>
+                            <button onclick="showEditProductForm('${product.product_name}', ${product.quantity})">編輯</button>
+                            <button onclick="showListProductForm('${product.product_name}', ${product.quantity})">上架</button>
+                            <button class="button" onclick="deleteWarehouseProduct('${product.product_name}')">刪除</button>
+                        `;
+                    warehouseList.appendChild(productItem);
+                });
+            } catch (error) {
+                console.error('載入倉庫商品列表失敗：', error);
+                alert('無法載入倉庫商品列表');
+            }
+        }
+
+        // 排序販售中的商品
+        async function sortSellingProducts(order) {
+            const criteria = document.getElementById('sortSellingCriteria').value;
+            try {
+                const response = await fetch(`/get-selling-products?sortCriteria=${criteria}&sortOrder=${order}`);
+                if (!response.ok) throw new Error('無法取得販售中的商品列表');
+                const products = await response.json();
+
+                const productsList = document.getElementById('productsList');
+                productsList.innerHTML = ''; // 清空現有內容
+                products.forEach(product => {
+                    const productItem = document.createElement('div');
+                    productItem.className = 'product-item';
+                    productItem.innerHTML = `
+                            <p data-criteria="product_name">商品名稱: ${product.product_name}</p>
+                            <p data-criteria="price">價格: ${product.price} 元</p>
+                            <p data-criteria="quantity">數量: ${product.quantity}</p>
+                            <button onclick="unlistProduct('${product.product_name}', ${product.quantity}, ${product.price})">下架</button>
+                        `;
+                    productsList.appendChild(productItem);
+                });
+            } catch (error) {
+                console.error('載入販售中的商品列表失敗：', error);
+                alert('無法載入販售中的商品列表');
+            }
+        }
+
+        // 排序交易頁面的商品
+        async function sortTradeProducts(order) {
+            const criteria = document.getElementById('sortTradeCriteria').value;
+            try {
+                const response = await fetch(`/get-products?sortCriteria=${criteria}&sortOrder=${order}`);
+                if (!response.ok) throw new Error('無法取得商品列表');
+                const products = await response.json();
+
+                const productList = document.getElementById('productList');
+                productList.innerHTML = ''; // 清空現有內容
+                if (products.length === 0) {
+                    document.getElementById('noProductsMessage').style.display = 'block';
+                } else {
+                    document.getElementById('noProductsMessage').style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>價格: ${product.price} 元</p>
+                        <p>剩餘數量: ${product.quantity}</p>
+                        <p>賣家: ${product.seller_username}</p>
+                        <label for="buyQuantity_${product.product_id}">購買數量:</label>
+                        <input type="number" id="buyQuantity_${product.product_id}" min="1" max="${product.quantity}" value="1">
+                        <button onclick="buyProduct(${product.product_id}, ${product.price})">購買</button>
+                    `;
+                        productList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('載入商品列表失敗：', error);
+                alert('無法載入商品列表');
+            }
+        }
+
+        // 打工功能
+        async function work() {
+            try {
+                const response = await fetch('/work', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUsername })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    const userBalanceElement = document.getElementById('userBalance');
+                    userBalanceElement.classList.add('highlight');
+                    setTimeout(() => {
+                        userBalanceElement.classList.remove('highlight');
+                    }, 500); // 2秒後移除高亮樣式
+                    loadUserInfo(currentUsername); // 更新用戶餘額
+                } else {
+                    alert(data.message || '打工失敗');
+                }
+            } catch (error) {
+                console.error('打工失敗：', error);
+                alert('伺服器錯誤，無法打工');
+            }
+        }
+
+        // 登出
+        async function logout() {
+            try {
+                const response = await fetch('/logout', { method: 'POST' });
+                if (response.ok) {
+                    alert('已成功登出');
+                    window.location.href = 'login_register.html';
+                } else {
+                    throw new Error('登出失敗');
+                }
+            } catch (error) {
+                console.error('登出失敗：', error);
+                alert('無法登出，請稍後重試');
+            }
+        }
+
+        // 刪除帳號
+        async function deleteAccount() {
+            const confirmation = confirm('確定要刪除帳號嗎？此操作無法恢復。');
+            if (!confirmation) return;
+
+            try {
+                const response = await fetch('/delete-account', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUsername })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('帳號已刪除');
+                    window.location.href = 'login_register.html'; // 刪除成功後跳轉到登入頁面
+                } else {
+                    alert(data.message || '刪除帳號失敗');
+                }
+            } catch (error) {
+                console.error('刪除帳號失敗：', error);
+                alert('伺服器錯誤，無法刪除帳號');
+            }
+        }
+
+        // 初始化
+        window.onload = () => {
+            checkLogin();
+            switchPage('profile'); // 預設顯示個人資料頁
+            loadProducts();        // 預設載入商品列表
+            loadWarehouseProducts(); // 預設載入倉庫商品列表
+            loadSellingProducts(); // 預設載入販售中的商品列表
+        };
+
+        // 搜尋倉庫商品
+        async function searchWarehouseProducts() {
+            const keyword = document.getElementById('searchKeyword').value.trim();
+            const criteria = document.getElementById('sortCriteria').value;
+            const noWarehouseProductsMessage = document.getElementById('noWarehouseProductsMessage');
+            const noWarehouseProductsSearchMessage = document.getElementById('noWarehouseProductsSearchMessage');
+            noWarehouseProductsMessage.style.display = 'none'; // 隱藏無商品訊息
+            noWarehouseProductsSearchMessage.style.display = 'none'; // 隱藏查無此商品訊息
+
+            if (!keyword) {
+                loadWarehouseProducts(); // 當輸入為空時顯示所有物品
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search-warehouse-products?keyword=${encodeURIComponent(keyword)}&criteria=${criteria}`);
+                if (!response.ok) throw new Error('無法取得搜尋結果');
+                const products = await response.json();
+
+                const warehouseList = document.getElementById('warehouseList');
+                warehouseList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noWarehouseProductsSearchMessage.style.display = 'block';
+                } else {
+                    noWarehouseProductsSearchMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>數量: ${product.quantity}</p>
+                        <button onclick="showEditProductForm('${product.product_name}', ${product.quantity})">編輯</button>
+                        <button onclick="showListProductForm('${product.product_name}', ${product.quantity})">上架</button>
+                        <button class="button" onclick="deleteWarehouseProduct('${product.product_name}')">刪除</button>
+                    `;
+                        warehouseList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('搜尋失敗：', error);
+                alert('無法取得搜尋結果');
+            }
+        }
+
+        // 搜尋販售中的商品
+        async function searchSellingProducts() {
+            const keyword = document.getElementById('searchSellingKeyword').value.trim();
+            const criteria = document.getElementById('sortSellingCriteria').value;
+            const noSellingProductsMessage = document.getElementById('noSellingProductsMessage');
+            const noSellingProductsSearchMessage = document.getElementById('noSellingProductsSearchMessage');
+            noSellingProductsMessage.style.display = 'none'; // 隱藏無商品訊息
+            noSellingProductsSearchMessage.style.display = 'none'; // 隱藏查無此商品訊息
+
+            if (!keyword) {
+                loadSellingProducts(); // 當輸入為空時顯示所有物品
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search-selling-products?keyword=${encodeURIComponent(keyword)}&criteria=${criteria}`);
+                if (!response.ok) throw new Error('無法取得搜尋結果');
+                const products = await response.json();
+
+                const productsList = document.getElementById('productsList');
+                productsList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noSellingProductsSearchMessage.style.display = 'block';
+                } else {
+                    noSellingProductsSearchMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>價格: ${product.price} 元</p>
+                        <p>數量: ${product.quantity}</p>
+                        <button onclick="unlistProduct('${product.product_name}', ${product.quantity}, ${product.price})">下架</button>
+                    `;
+                        productsList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('搜尋失敗：', error);
+                alert('無法取得搜尋結果');
+            }
+        }
+
+        // 搜尋交易頁面的商品
+        async function searchTradeProducts() {
+            const keyword = document.getElementById('searchTradeKeyword').value.trim();
+            const criteria = document.getElementById('sortTradeCriteria').value;
+            const noTradeProductsMessage = document.getElementById('noTradeProductsMessage');
+            noTradeProductsMessage.style.display = 'none'; // 隱藏無商品訊息
+
+            if (!keyword) {
+                loadProducts(); // 當輸入為空時顯示所有物品
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search-products?keyword=${encodeURIComponent(keyword)}&criteria=${criteria}`);
+                if (!response.ok) throw new Error('無法取得搜尋結果');
+                const products = await response.json();
+
+                const productList = document.getElementById('productList');
+                productList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noTradeProductsMessage.style.display = 'block';
+                } else {
+                    noTradeProductsMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>價格: ${product.price} 元</p>
+                        <p>剩餘數量: ${product.quantity}</p>
+                        <p>賣家: ${product.seller_username}</p>
+                        <label for="buyQuantity_${product.product_id}">購買數量:</label>
+                        <input type="number" id="buyQuantity_${product.product_id}" min="1" max="${product.quantity}" value="1">
+                        <button onclick="buyProduct(${product.product_id}, ${product.price})">購買</button>
+                    `;
+                        productList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('搜尋失敗：', error);
+                alert('無法取得搜尋結果');
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="user-info">
+            <h1 id="username">歡迎，使用者</h1>
+            <div id="userBalance">餘額: 正在加載...</div>
+        </div>
+        <button id="workButton" class="button work-button" onclick="work()">打工</button>
+        <button id="logoutButton" onclick="logout()">登出</button>
+    </div>
+
+    <div class="main-content">
+        <div class="tabs">
+            <button onclick="switchPage('profile')">個人資料</button>
+            <button onclick="switchPage('trade')">交易頁面</button>
+            <button onclick="switchPage('warehouse')">倉庫</button>
+        </div>
+
+        <!-- 個人資料頁 -->
+        <div id="profile" class="page">
+            <div id="profileView">
+                <h2>個人資料</h2>
+                <p id="userEmail" class="fixed-width fixed-height profile-item">電子郵件: 正在加載...</p>
+                <p id="userPhone" class="fixed-width fixed-height profile-item">電話: 正在加載...</p>
+                <p id="userAddress" class="fixed-width fixed-height profile-item">收貨地址: 正在加載...</p>
+                <button class="button" onclick="editProfile()">編輯</button>
+                <button class="button" onclick="deleteAccount()">刪除帳號</button>
+            </div>
+            <div id="profileEdit" style="display:none;">
+                <h2>編輯個人資料</h2>
+                <label for="editEmail">電子郵件:</label>
+                <input type="email" id="editEmail" class="fixed-width fixed-height"><br><br>
+                <label for="editPhone">電話:</label>
+                <input type="text" id="editPhone" class="fixed-width fixed-height"><br><br>
+                <label for="editAddress">收貨地址:</label>
+                <input type="text" id="editAddress" class="fixed-width fixed-height"><br><br>
+                <button class="button button" onclick="saveProfile()">保存</button>
+                <button class="button button-white" onclick="cancelEditProfile()">取消</button>
+            </div>
+        </div>
+
+        <!-- 交易頁面 -->
+        <div id="trade" class="page" style="display:none;">
+            <h2>交易頁面</h2>
+            <div class="actions">
+                <select id="sortTradeCriteria">
+                    <option value="product_name">按名稱</option>
+                    <option value="price">按價格</option>
+                    <option value="quantity">按數量</option>
+                    <option value="seller_username">按賣家</option> <!-- 新增選項 -->
+                </select>
+                <button class="button button-yellow" onclick="sortTradeProducts('asc')">升序</button>
+                <button class="button button-yellow" onclick="sortTradeProducts('desc')">降序</button>
+                <input type="text" id="searchTradeKeyword" placeholder="尋找名稱">
+                <button class="button button-yellow" onclick="searchTradeProducts()">搜尋</button>
+            </div>
+            <div id="productList"></div>
+            <div id="noProductsMessage" class="no-products" style="display:none;">
+                無商品
+            </div>
+            <div id="noTradeProductsMessage" class="no-products" style="display:none;">
+                查無此商品
+            </div>
+            <!-- 商品列表會在這裡顯示 -->
+        </div>
+
+        <!-- 倉庫頁面 -->
+        <div id="warehouse" class="page" style="display:none;">
+            <h2>倉庫</h2>
+            <div class="warehouse-container">
+                <div id="personalWarehouse" class="warehouse-section">
+                    <h3>私人倉庫</h3>
+                    <div class="actions">
+                        <button class="button" onclick="showUploadProductForm()">上傳商品</button>
+                        <select id="sortCriteria">
+                            <option value="product_name">按名稱</option>
+                            <option value="quantity">按數量</option>
+                        </select>
+                        <button class="button button-yellow" onclick="sortWarehouseProducts('asc')">升序</button>
+                        <button class="button button-yellow" onclick="sortWarehouseProducts('desc')">降序</button>
+                        <input type="text" id="searchKeyword" placeholder="尋找名稱">
+                        <button class="button button-yellow" onclick="searchWarehouseProducts()">搜尋</button>
+                    </div>
+                    <div id="warehouseList">
+                        <!-- 私人倉庫商品列表會在這裡顯示 -->
+                    </div>
+                    <div id="noWarehouseProductsMessage" class="no-products" style="display:none;">
+                        無商品
+                    </div>
+                    <div id="noWarehouseProductsSearchMessage" class="no-products" style="display:none;">
+                        查無此商品
+                    </div>
+                </div>
+                <div id="sellingProducts" class="warehouse-section">
+                    <h3>販售中的商品</h3>
+                    <div class="actions">
+                        <select id="sortSellingCriteria">
+                            <option value="product_name">按名稱</option>
+                            <option value="price">按價格</option>
+                            <option value="quantity">按數量</option>
+                        </select>
+                        <button class="button button-yellow" onclick="sortSellingProducts('asc')">升序</button>
+                        <button class="button button-yellow" onclick="sortSellingProducts('desc')">降序</button>
+                        <input type="text" id="searchSellingKeyword" placeholder="尋找名稱">
+                        <button class="button button-yellow" onclick="searchSellingProducts()">搜尋</button>
+                    </div>
+                    <div id="productsList">
+                        <!-- 販售中的商品列表會在這裡顯示 -->
+                    </div>
+                    <div id="noSellingProductsMessage" class="no-products" style="display:none;">
+                        無商品
+                    </div>
+                    <div id="noSellingProductsSearchMessage" class="no-products" style="display:none;">
+                        查無此商品
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上傳商品表單彈出視窗 -->
+    <div id="uploadProductForm" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="hideUploadProductForm()">&times;</span>
+            <h2>上傳商品</h2>
+            <form>
+                <label for="productName">商品名稱:</label>
+                <input type="text" id="productName" required><br><br>
+                <label for="productQuantity">數量:</label>
+                <input type="number" id="productQuantity" required><br><br>
+                <button class="button" type="button" onclick="uploadProduct()">上傳商品</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 編輯商品表單彈出視窗 -->
+    <div id="editProductForm" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="hideEditProductForm()">&times;</span>
+            <h2>編輯商品</h2>
+            <form>
+                <input type="hidden" id="originalProductName">
+                <label for="editProductName">商品名稱:</label>
+                <input type="text" id="editProductName" required><br><br>
+                <label for="editProductQuantity">數量:</label>
+                <input type="number" id="editProductQuantity" required><br><br>
+                <button class="button yellow-button" type="button" onclick="editProduct()">更新</button>
+                <button class="button button-white" type="button" onclick="hideEditProductForm()">取消</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 上架商品表單彈出視窗 -->
+    <div id="listProductForm" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="hideListProductForm()">&times;</span>
+            <h2>上架商品</h2>
+            <form>
+                <input type="hidden" id="listProductName">
+                <label for="listProductQuantity">數量:</label>
+                <input type="number" id="listProductQuantity" required><br><br>
+                <label for="listProductPrice">價格:</label>
+                <input type="number" id="listProductPrice" required><br><br>
+                <button class="button" type="button" onclick="listProduct()">上架</button>
+                <button class="button button-white" type="button" onclick="hideListProductForm()">取消</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 上傳商品
+        async function uploadProduct() {
+            const productName = document.getElementById('productName').value.trim();
+            const quantity = document.getElementById('productQuantity').value.trim();
+
+            if (!productName || !quantity) {
+                alert('請填寫完整的商品資料');
+                return;
+            }
+
+            // 使用 parseInt 解析數量，確保是整數
+            const parsedQuantity = parseInt(quantity);
+            if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+                alert('請輸入有效的數量');
+                return;
+            }
+
+            try {
+                const response = await fetch('/add-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        quantity: parsedQuantity,
+                        seller_username: currentUsername // 使用當前登入的用戶名稱作為賣家名稱
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('商品上傳成功！');
+                    hideUploadProductForm(); // 關閉上傳商品表單彈出視窗
+                    loadWarehouseProducts(); // 重新載入倉庫商品列表
+                    loadSellingProducts(); // 重新載入販售中的商品列表
+                } else {
+                    alert(data.message || '商品上傳失敗');
+                }
+            } catch (error) {
+                console.error('商品上傳失敗：', error);
+                alert('伺服器錯誤，無法上傳商品');
+            }
+        }
+
+        // 上架商品
+        async function listProduct() {
+            const productName = document.getElementById('listProductName').value;
+            const quantity = document.getElementById('listProductQuantity').value;
+            const price = document.getElementById('listProductPrice').value;
+
+            if (!quantity || !price) {
+                alert('請填寫完整的商品資料');
+                return;
+            }
+
+            const parsedQuantity = parseInt(quantity);
+            const parsedPrice = parseFloat(price);
+
+            if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+                alert('請輸入有效的數量');
+                return;
+            }
+
+            if (isNaN(parsedPrice) || parsedPrice <= 0) {
+                alert('請輸入有效的價格');
+                return;
+            }
+
+            try {
+                const response = await fetch('/list-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        quantity: parsedQuantity,
+                        price: parsedPrice,
+                        seller_username: currentUsername // 使用當前登入的用戶名稱作為賣家名稱
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('商品上架成功！');
+                    hideListProductForm(); // 關閉上架商品表單彈出視窗
+                    loadWarehouseProducts(); // 重新載入倉庫商品列表
+                    loadSellingProducts(); // 重新載入販售中的商品列表
+                    // 如果上架後私人倉庫裡庫存為0，則刪除該商品
+                    if (parsedQuantity === 0) {
+                        deleteWarehouseProduct(productName);
+                    }
+                } else {
+                    alert(data.message || '商品上架失敗');
+                }
+            } catch (error) {
+                console.error('商品上架失敗：', error);
+                alert('伺服器錯誤，無法上架商品');
+            }
+        }
+
+        // 下架商品
+        async function unlistProduct(productName, quantity, price) {
+            try {
+                const response = await fetch('/unlist-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        quantity: quantity,
+                        price: price,
+                        seller_username: currentUsername // 使用當前登入的用戶名稱作為賣家名稱
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('商品下架成功！');
+                    loadWarehouseProducts(); // 重新載入倉庫商品列表
+                    loadSellingProducts(); // 重新載入販售中的商品列表
+                } else {
+                    alert(data.message || '商品下架失敗');
+                }
+            } catch (error) {
+                console.error('商品下架失敗：', error);
+                alert('伺服器錯誤，無法下架商品');
+            }
+        }
+
+        // 刪除私人倉庫商品
+        async function deleteWarehouseProduct(productName) {
+            try {
+                const response = await fetch('/delete-warehouse-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        seller_username: currentUsername // 使用當前登入的用戶名稱作為賣家名稱
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('商品刪除成功！');
+                    loadWarehouseProducts(); // 重新載入倉庫商品列表
+                } else {
+                    alert(data.message || '商品刪除失敗');
+                }
+            } catch (error) {
+                console.error('商品刪除失敗：', error);
+                alert('伺服器錯誤，無法刪除商品');
+            }
+        }
+
+        // 載入私人倉庫商品列表
+        async function loadWarehouseProducts() {
+            try {
+                const response = await fetch('/get-warehouse-products');
+                if (!response.ok) throw new Error('無法取得倉庫商品列表');
+                const products = await response.json();
+
+                const warehouseList = document.getElementById('warehouseList');
+                const noWarehouseProductsMessage = document.getElementById('noWarehouseProductsMessage');
+                const noWarehouseProductsSearchMessage = document.getElementById('noWarehouseProductsSearchMessage');
+                warehouseList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noWarehouseProductsMessage.style.display = 'block';
+                    noWarehouseProductsSearchMessage.style.display = 'none';
+                } else {
+                    noWarehouseProductsMessage.style.display = 'none';
+                    noWarehouseProductsSearchMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                    <p>商品名稱: ${product.product_name}</p>
+                    <p>數量: ${product.quantity}</p>
+                    <button onclick="showEditProductForm('${product.product_name}', ${product.quantity})">編輯</button>
+                    <button onclick="showListProductForm('${product.product_name}', ${product.quantity})">上架</button>
+                    <button class="button" onclick="deleteWarehouseProduct('${product.product_name}')">刪除</button>
+                `;
+                        warehouseList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('載入倉庫商品列表失敗：', error);
+                alert('無法載入倉庫商品列表');
+            }
+        }
+
+        // 載入販售中的商品列表
+        async function loadSellingProducts() {
+            try {
+                const response = await fetch('/get-selling-products');
+                if (!response.ok) throw new Error('無法取得販售中的商品列表');
+                const products = await response.json();
+
+                const productsList = document.getElementById('productsList');
+                const noSellingProductsMessage = document.getElementById('noSellingProductsMessage');
+                const noSellingProductsSearchMessage = document.getElementById('noSellingProductsSearchMessage');
+                productsList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noSellingProductsMessage.style.display = 'block';
+                    noSellingProductsSearchMessage.style.display = 'none';
+                } else {
+                    noSellingProductsMessage.style.display = 'none';
+                    noSellingProductsSearchMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                    <p>商品名稱: ${product.product_name}</p>
+                    <p>價格: ${product.price} 元</p>
+                    <p>數量: ${product.quantity}</p>
+                    <button onclick="unlistProduct('${product.product_name}', ${product.quantity}, ${product.price})">下架</button>
+                `;
+                        productsList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('載入販售中的商品列表失敗：', error);
+                alert('無法載入販售中的商品列表');
+            }
+        }
+
+        function showUploadProductForm() {
+            document.getElementById('uploadProductForm').style.display = 'block';
+        }
+
+        function hideUploadProductForm() {
+            document.getElementById('uploadProductForm').style.display = 'none';
+        }
+
+        // 顯示上架商品表單
+        function showListProductForm(productName, maxQuantity) {
+            document.getElementById('listProductForm').style.display = 'block';
+            document.getElementById('listProductName').value = productName;
+            document.getElementById('listProductQuantity').max = maxQuantity;
+        }
+
+        // 隱藏上架商品表單
+        function hideListProductForm() {
+            document.getElementById('listProductForm').style.display = 'none';
+        }
+
+        // 排序倉庫商品
+        async function sortWarehouseProducts(order) {
+            const criteria = document.getElementById('sortCriteria').value;
+            try {
+                const response = await fetch(`/get-warehouse-products?sortCriteria=${criteria}&sortOrder=${order}`);
+                if (!response.ok) throw new Error('無法取得倉庫商品列表');
+                const products = await response.json();
+
+                const warehouseList = document.getElementById('warehouseList');
+                warehouseList.innerHTML = ''; // 清空現有內容
+                products.forEach(product => {
+                    const productItem = document.createElement('div');
+                    productItem.className = 'product-item';
+                    productItem.innerHTML = `
+                            <p data-criteria="product_name">商品名稱: ${product.product_name}</p>
+                            <p data-criteria="quantity">數量: ${product.quantity}</p>
+                            <button onclick="showEditProductForm('${product.product_name}', ${product.quantity})">編輯</button>
+                            <button onclick="showListProductForm('${product.product_name}', ${product.quantity})">上架</button>
+                            <button class="button" onclick="deleteWarehouseProduct('${product.product_name}')">刪除</button>
+                        `;
+                    warehouseList.appendChild(productItem);
+                });
+            } catch (error) {
+                console.error('載入倉庫商品列表失敗：', error);
+                alert('無法載入倉庫商品列表');
+            }
+        }
+
+        // 排序販售中的商品
+        async function sortSellingProducts(order) {
+            const criteria = document.getElementById('sortSellingCriteria').value;
+            try {
+                const response = await fetch(`/get-selling-products?sortCriteria=${criteria}&sortOrder=${order}`);
+                if (!response.ok) throw new Error('無法取得販售中的商品列表');
+                const products = await response.json();
+
+                const productsList = document.getElementById('productsList');
+                productsList.innerHTML = ''; // 清空現有內容
+                products.forEach(product => {
+                    const productItem = document.createElement('div');
+                    productItem.className = 'product-item';
+                    productItem.innerHTML = `
+                            <p data-criteria="product_name">商品名稱: ${product.product_name}</p>
+                            <p data-criteria="price">價格: ${product.price} 元</p>
+                            <p data-criteria="quantity">數量: ${product.quantity}</p>
+                            <button onclick="unlistProduct('${product.product_name}', ${product.quantity}, ${product.price})">下架</button>
+                        `;
+                    productsList.appendChild(productItem);
+                });
+            } catch (error) {
+                console.error('載入販售中的商品列表失敗：', error);
+                alert('無法載入販售中的商品列表');
+            }
+        }
+
+        // 排序交易頁面的商品
+        async function sortTradeProducts(order) {
+            const criteria = document.getElementById('sortTradeCriteria').value;
+            try {
+                const response = await fetch(`/get-products?sortCriteria=${criteria}&sortOrder=${order}`);
+                if (!response.ok) throw new Error('無法取得商品列表');
+                const products = await response.json();
+
+                const productList = document.getElementById('productList');
+                productList.innerHTML = ''; // 清空現有內容
+                if (products.length === 0) {
+                    document.getElementById('noProductsMessage').style.display = 'block';
+                } else {
+                    document.getElementById('noProductsMessage').style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>價格: ${product.price} 元</p>
+                        <p>剩餘數量: ${product.quantity}</p>
+                        <p>賣家: ${product.seller_username}</p>
+                        <label for="buyQuantity_${product.product_id}">購買數量:</label>
+                        <input type="number" id="buyQuantity_${product.product_id}" min="1" max="${product.quantity}" value="1">
+                        <button onclick="buyProduct(${product.product_id}, ${product.price})">購買</button>
+                    `;
+                        productList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('載入商品列表失敗：', error);
+                alert('無法載入商品列表');
+            }
+        }
+
+        // 初始化
+        window.onload = () => {
+            checkLogin();
+            switchPage('profile'); // 預設顯示個人資料頁
+            loadProducts();        // 預設載入商品列表
+            loadWarehouseProducts(); // 預設載入倉庫商品列表
+            loadSellingProducts(); // 預設載入販售中的商品列表
+        };
+
+        // 搜尋倉庫商品
+        async function searchWarehouseProducts() {
+            const keyword = document.getElementById('searchKeyword').value.trim();
+            const criteria = document.getElementById('sortCriteria').value;
+            const noWarehouseProductsMessage = document.getElementById('noWarehouseProductsMessage');
+            const noWarehouseProductsSearchMessage = document.getElementById('noWarehouseProductsSearchMessage');
+            noWarehouseProductsMessage.style.display = 'none'; // 隱藏無商品訊息
+            noWarehouseProductsSearchMessage.style.display = 'none'; // 隱藏查無此商品訊息
+
+            if (!keyword) {
+                loadWarehouseProducts(); // 當輸入為空時顯示所有物品
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search-warehouse-products?keyword=${encodeURIComponent(keyword)}&criteria=${criteria}`);
+                if (!response.ok) throw new Error('無法取得搜尋結果');
+                const products = await response.json();
+
+                const warehouseList = document.getElementById('warehouseList');
+                warehouseList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noWarehouseProductsSearchMessage.style.display = 'block';
+                } else {
+                    noWarehouseProductsSearchMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>數量: ${product.quantity}</p>
+                        <button onclick="showEditProductForm('${product.product_name}', ${product.quantity})">編輯</button>
+                        <button onclick="showListProductForm('${product.product_name}', ${product.quantity})">上架</button>
+                        <button class="button" onclick="deleteWarehouseProduct('${product.product_name}')">刪除</button>
+                    `;
+                        warehouseList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('搜尋失敗：', error);
+                alert('無法取得搜尋結果');
+            }
+        }
+
+        // 搜尋販售中的商品
+        async function searchSellingProducts() {
+            const keyword = document.getElementById('searchSellingKeyword').value.trim();
+            const criteria = document.getElementById('sortSellingCriteria').value;
+            const noSellingProductsMessage = document.getElementById('noSellingProductsMessage');
+            const noSellingProductsSearchMessage = document.getElementById('noSellingProductsSearchMessage');
+            noSellingProductsMessage.style.display = 'none'; // 隱藏無商品訊息
+            noSellingProductsSearchMessage.style.display = 'none'; // 隱藏查無此商品訊息
+
+            if (!keyword) {
+                loadSellingProducts(); // 當輸入為空時顯示所有物品
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search-selling-products?keyword=${encodeURIComponent(keyword)}&criteria=${criteria}`);
+                if (!response.ok) throw new Error('無法取得搜尋結果');
+                const products = await response.json();
+
+                const productsList = document.getElementById('productsList');
+                productsList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noSellingProductsSearchMessage.style.display = 'block';
+                } else {
+                    noSellingProductsSearchMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>價格: ${product.price} 元</p>
+                        <p>數量: ${product.quantity}</p>
+                        <button onclick="unlistProduct('${product.product_name}', ${product.quantity}, ${product.price})">下架</button>
+                    `;
+                        productsList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('搜尋失敗：', error);
+                alert('無法取得搜尋結果');
+            }
+        }
+
+        // 搜尋交易頁面的商品
+        async function searchTradeProducts() {
+            const keyword = document.getElementById('searchTradeKeyword').value.trim();
+            const criteria = document.getElementById('sortTradeCriteria').value;
+            const noTradeProductsMessage = document.getElementById('noTradeProductsMessage');
+            noTradeProductsMessage.style.display = 'none'; // 隱藏無商品訊息
+
+            if (!keyword) {
+                loadProducts(); // 當輸入為空時顯示所有物品
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search-products?keyword=${encodeURIComponent(keyword)}&criteria=${criteria}`);
+                if (!response.ok) throw new Error('無法取得搜尋結果');
+                const products = await response.json();
+
+                const productList = document.getElementById('productList');
+                productList.innerHTML = ''; // 清空現有內容
+
+                if (products.length === 0) {
+                    noTradeProductsMessage.style.display = 'block';
+                } else {
+                    noTradeProductsMessage.style.display = 'none';
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        productItem.className = 'product-item';
+                        productItem.innerHTML = `
+                        <p>商品名稱: ${product.product_name}</p>
+                        <p>價格: ${product.price} 元</p>
+                        <p>剩餘數量: ${product.quantity}</p>
+                        <p>賣家: ${product.seller_username}</p>
+                        <label for="buyQuantity_${product.product_id}">購買數量:</label>
+                        <input type="number" id="buyQuantity_${product.product_id}" min="1" max="${product.quantity}" value="1">
+                        <button onclick="buyProduct(${product.product_id}, ${product.price})">購買</button>
+                    `;
+                        productList.appendChild(productItem);
+                    });
+                }
+            } catch (error) {
+                console.error('搜尋失敗：', error);
+                alert('無法取得搜尋結果');
+            }
+        }
+    </script>
+    </div>
+</body>
+
+</html>

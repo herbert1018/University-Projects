@@ -1,0 +1,351 @@
+/* 全局樣式 */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    background-color: #f5f5f5;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* 左側邊欄樣式 */
+.sidebar {
+    width: 250px;
+    background-color: #61adf0;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    height: calc(100vh - 40px);
+    position: fixed;
+    top: 0;
+}
+
+.user-info {
+    flex-grow: 1;
+}
+
+#logoutButton {
+    padding: 10px 20px;
+    background-color: #f16a68;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    border-radius: 8px;
+    width: 100%;
+    text-align: center;
+}
+
+#logoutButton:hover {
+    background-color: #d45351;
+}
+
+/* 右側主內容區 */
+.main-content {
+    margin-left: 270px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* 編輯個資按鈕的樣式 */
+.button {
+    background-color: #f16a68;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.button:hover {
+    background-color: #d45351;
+}
+
+.button:active {
+    transform: scale(0.95);
+}
+
+.button-white {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #000000;
+}
+
+.button-white:hover {
+    background-color: #f0f0f0;
+}
+
+.button-white:active {
+    transform: scale(0.95);
+}
+
+.button-yellow {
+    background-color: #fff7b3;
+    color: #000000;
+    border: 1px solid #000000;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.button-yellow:hover {
+    background-color: #ffe058;
+}
+
+.button-yellow:active {
+    transform: scale(0.95);
+}
+
+/* 新增打工按鈕的樣式及特效 */
+.work-button {
+    background-color: #f16a68;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    width: 100%;
+    text-align: center;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.work-button:hover {
+    background-color: #d45351;
+}
+
+.work-button:active {
+    transform: scale(0.95);
+}
+
+/* 固定高、寬度的樣式 */
+.fixed-width {
+    width: 300px;
+    /* 設定固定寬度 */
+    display: inline-block;
+}
+
+.fixed-height {
+    height: 35px;
+    /* 設定固定高度，根據需要調整 */
+    display: inline-block;
+    vertical-align: middle;
+    /* 垂直對齊 */
+}
+
+/* 個人資料項目的樣式 */
+.profile-item {
+    display: block;
+    /* 確保每個項目顯示在單獨的行上 */
+    margin-bottom: 10px;
+    /* 增加項目之間的間距 */
+}
+
+/* 頁面切換按鈕的樣式 */
+.tabs {
+    display: flex;
+    justify-content: flex-start;
+    /* 將按鈕靠左對齊 */
+    background-color: #ffffff;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 頁面切換按鈕的樣式 */
+.tabs button {
+    background-color: #ffffff;
+    color: #000000;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+    width: 10%;
+    text-align: center;
+    border-radius: 0;
+    box-sizing: border-box;
+    border: none;
+    padding: 10px;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.tabs button:hover {
+    background-color: #dddddd;
+}
+
+.tabs button:active {
+    background-color: #cccccc;
+    transform: scale(0.95);
+}
+
+/* 當前選中按鈕的樣式 */
+.tabs button.active {
+    background-color: #61adf0;
+    color: #ffffff;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/*沒商品時的樣式*/
+.no-products {
+    text-align: left;
+    font-size: 18px;
+    color: #888;
+    margin-top: 20px;
+    padding-left: 20px;
+}
+
+/* 各頁面樣式 */
+.page {
+    display: none;
+    padding: 20px;
+    margin-left: 17px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 確保頁面內的標題有適當的間距 */
+.page h2 {
+    margin-top: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 頁面內的文字和其他元素樣式 */
+.page p {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* 商品項目樣式 */
+.product-item {
+    background-color: #fff;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.product-item button {
+    background-color: #4facfe;
+    border: none;
+    color: white;
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.product-item button:hover {
+    background-color: #00f2fe;
+}
+
+.warehouse-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    /* 增加區塊之間的間距 */
+    align-items: flex-start;
+    /* 使兩邊的高度符合內部數量 */
+}
+
+.warehouse-section {
+    width: 48%;
+    background-color: #f9f9f9;
+    padding: 20px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    /* 添加邊框 */
+    flex-grow: 1;
+    /* 使區塊高度自適應內容 */
+}
+
+.product-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+/* 上傳商品表單彈出視窗樣式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.actions select {
+    padding: 5px;
+    font-size: 16px;
+}
+
+.actions button {
+    padding: 5px 10px;
+    font-size: 16px;
+}
+
+.highlight {
+    background-color: yellow;
+    transition: background-color 2s ease;
+}

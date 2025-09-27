@@ -1,0 +1,19 @@
+CREATE DATABASE access_control;
+USE access_control;
+
+-- 人流資料表
+CREATE TABLE people_flow (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    count INT,
+    in_count INT,
+    out_count INT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 強闖記錄表
+CREATE TABLE intrusion_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    alert BOOLEAN,
+    location VARCHAR(100),
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);

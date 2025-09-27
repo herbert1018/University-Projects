@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入與註冊</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="form-container">
+        <!-- 登入表單 -->
+        <div class="form-box login-box active">
+            <h1>登入帳號</h1>
+            <form id="loginForm">
+                <input type="text" name="username" placeholder="使用者名稱" required>
+                <input type="password" name="password" placeholder="密碼" required>
+                <button type="submit">登入</button>
+            </form>
+            <p id="loginError" class="error-message"></p>
+            <p>還沒有帳號嗎？<span class="toggle-link" onclick="toggleForms()">立即註冊</span></p>
+        </div>
+
+        <!-- 註冊表單 -->
+        <div class="form-box register-box">
+            <h1>註冊帳號</h1>
+            <form id="registerForm">
+                <input type="text" name="username" placeholder="使用者名稱" required>
+                <input type="password" name="password" placeholder="密碼" required>
+                <input type="password" name="confirmPassword" placeholder="再次輸入密碼" required>
+                <button type="submit">註冊</button>
+            </form>
+            <p id="registerError" class="error-message"></p>
+            <p>已經有帳號了嗎？<span class="toggle-link" onclick="toggleForms()">立即登入</span></p>
+        </div>
+    </div>
+
+    <script>
+        // 切換登入和註冊表單顯示
+        function toggleForms() {
+            const body = document.body;
+
+            if (body.classList.contains('login-active')) {
+                body.classList.remove('login-active');
+                body.classList.add('register-active');
+            } else {
+                body.classList.remove('register-active');
+                body.classList.add('login-active');
+            }
+
+            const loginBox = document.querySelector('.login-box');
+            const registerBox = document.querySelector('.register-box');
+
+            loginBox.classList.toggle('active');
+            registerBox.classList.toggle('active');
+        }
+
+        // 登入表單處理
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.href = '/home.html'; // 登入成功，跳轉到購買頁面
+            } else {
+                alert(result.message); // 使用跳窗顯示錯誤訊息
+            }
+        });
+
+        // 註冊表單處理
+        document.getElementById('registerForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            if (data.password !== data.confirmPassword) {
+                alert('兩次輸入的密碼不相符，請重新輸入');
+                return;
+            }
+
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('註冊成功，請登入！');
+                toggleForms(); // 切換到登入表單
+            } else {
+                alert(result.message); // 使用跳窗顯示錯誤訊息
+            }
+        });
+
+        // 預設為登入狀態
+        window.onload = () => {
+            document.body.classList.add('login-active');
+        };
+    </script>
+</body>
+
+</html>
