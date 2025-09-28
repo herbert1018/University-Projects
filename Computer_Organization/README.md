@@ -3,8 +3,18 @@
 ## 專案簡介
 本專案為「計算機組織」課程的期末專題，主題為 **最大子陣列問題 (Maximum Subarray Problem)**。  
 使用circuitverse作為實作網站，內容包含演算法實作、程式碼示範，以及簡報文件。
-![問題示意圖](../support/CO_Problem.png)
-![電路展示圖](../support/CO_Demo.png)
+
+<p align="center">
+  <figure style="display:inline-block; margin:10px;">
+    <img src="../support/CO_Problem.png" alt="問題示意圖" width="48%" />
+    <figcaption>圖一、問題示意圖</figcaption>
+  </figure>
+  
+  <figure style="display:inline-block; margin:10px;">
+    <img src="../support/CO_Demo.png" alt="電路展示圖" width="48%" />
+    <figcaption>圖二、電路展示圖</figcaption>
+  </figure>
+</p>
 
 ## 檔案說明
 - `max subarray.cpp`：最大子陣列演算法的程式碼實作 (C++)  

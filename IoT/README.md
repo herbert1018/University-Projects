@@ -4,12 +4,27 @@
 本專案為「物聯網 (IoT)」課程的期末專題，設計一個 **捷運站驗票閘門系統**，模擬人流管制與異常狀況偵測。
 
 <p align="center">
-  <img src="../support/IOT_UI.png" alt="前端UI" width="200" />
-  <img src="../support/IOT_Demo.png" alt="實體展示" width="200" />
+  <figure style="display:inline-block; margin:10px;">
+    <img src="../support/IOT_UI.png" alt="前端UI" width="48%" />
+    <figcaption>圖一、前端使用者介面</figcaption>
+  </figure>
+  
+  <figure style="display:inline-block; margin:10px;">
+    <img src="../support/IOT_Demo.png" alt="實體展示" width="48%" />
+    <figcaption>圖二、實體展示照片</figcaption>
+  </figure>
 </p>
+
 <p align="center">
-  <img src="../support/IOT_NodeRed.png" alt="資料流" width="200" />
-  <img src="../support/IOT_Use.png" alt="使用元件" width="200" />
+  <figure style="display:inline-block; margin:10px;">
+    <img src="../support/IOT_NodeRed.png" alt="資料流" width="48%" />
+    <figcaption>圖三、資料流示意圖</figcaption>
+  </figure>
+  
+  <figure style="display:inline-block; margin:10px;">
+    <img src="../support/IOT_Use.png" alt="使用元件" width="48%" />
+    <figcaption>圖四、使用元件一覽</figcaption>
+  </figure>
 </p>
 
 ## 檔案說明

@@ -2,8 +2,18 @@
 
 ## 專案簡介
 本專案為「網際網路應用設計」課程期末專題，主題與 **TCP/IP 網路應用程式設計** 有關。
-![整體流程圖](../support/IAD_Flow.png)
-![遊戲展示圖](../support/IAD_Demo.png)
+
+<p align="center">
+  <figure style="display:inline-block; margin:10px;">
+    <img src="../support/IAD_Flow.png" alt="整體流程圖" width="48%" />
+    <figcaption>圖一、整體流程圖</figcaption>
+  </figure>
+  
+  <figure style="display:inline-block; margin:10px;">
+    <img src="../support/IAD_Demo.png" alt="遊戲展示圖" width="48%" />
+    <figcaption>圖二、遊戲展示圖</figcaption>
+  </figure>
+</p>
 
 ## 檔案說明
 - `test.py`：程式實作，包括 TCP/IP 通訊與遊戲主體  
