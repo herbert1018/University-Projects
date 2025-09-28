@@ -4,6 +4,15 @@
 本專案為「資料庫系統」課程的期末專題，內容涵蓋 **使用 Node.js 建立後端伺服器**，
 並搭配 MySQL 資料庫進行使用者登入、註冊與交易等基本介面操作。
 
+<p align="center">
+  <img src="../suport/DB_flow.png" alt="網站架構圖" width="200" />
+  <img src="../suport/DB_Er.png" alt="資料庫Er圖" width="200" />
+</p>
+<p align="center">
+  <img src="../suport/DB_login.png" alt="登錄介面" width="200" />
+  <img src="../suport/DB_home.png" alt="交易介面" width="200" />
+</p>
+
 ## 檔案說明
 - `server.js`：Node.js 後端伺服器程式  
 - `com.sql`：SQL 腳本，包含資料表建立與測試資料  

@@ -3,6 +3,15 @@
 ## 專案簡介
 本專案為「物聯網 (IoT)」課程的期末專題，設計一個 **捷運站驗票閘門系統**，模擬人流管制與異常狀況偵測。
 
+<p align="center">
+  <img src="../suport/IOT_UI.png" alt="前端UI" width="200" />
+  <img src="../suport/IOT_Demo.png" alt="實體展示" width="200" />
+</p>
+<p align="center">
+  <img src="../suport/IOT_NodeRed.png" alt="資料流" width="200" />
+  <img src="../suport/IOT_Use.png" alt="使用元件" width="200" />
+</p>
+
 ## 檔案說明
 - `MRT_Gate/MRT_Gate.ino`：ESP32 (Arduino IDE) 程式碼，控制閘門模擬  
 - `flows.json`：Node-RED 流程檔，實現即時資料顯示與控制  
