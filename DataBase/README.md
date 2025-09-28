@@ -4,11 +4,11 @@
 本專案為「資料庫系統」課程的期末專題，內容涵蓋 **使用 Node.js 建立後端伺服器**，
 並搭配 MySQL 資料庫進行使用者登入、註冊與交易等基本介面操作。
 
-| <img src="../support/DB_Flow.png" alt="網站架構圖" width="48%" height="600px"> | <img src="../support/DB_Er.png" alt="資料庫Er圖" width="48%" height="600px"> |
+| ![網站架構圖](../support/DB_Flow.png) | ![資料庫Er圖](../support/DB_Er.png) |
 |:--:|:--:|
 | 圖一、網站架構圖 | 圖二、資料庫Er圖 |
 
-| <img src="../support/DB_Login.png" alt="登錄介面" width="48%" height="600px"> | <img src="../support/DB_Home.png" alt="交易介面" width="48%" height="600px"> |
+| ![登錄介面](../support/DB_Login.png) | ![交易介面](../support/DB_Home.png) |
 |:--:|:--:|
 | 圖三、登錄/註冊介面 | 圖四、交易/倉庫介面 |
 
