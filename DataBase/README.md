@@ -5,12 +5,12 @@
 並搭配 MySQL 資料庫進行使用者登入、註冊與交易等基本介面操作。
 
 <p align="center">
-  <img src="../suport/DB_flow.png" alt="網站架構圖" width="200" />
-  <img src="../suport/DB_Er.png" alt="資料庫Er圖" width="200" />
+  <img src="../support/DB_Flow.png" alt="網站架構圖" width="200" />
+  <img src="../support/DB_Er.png" alt="資料庫Er圖" width="200" />
 </p>
 <p align="center">
-  <img src="../suport/DB_login.png" alt="登錄介面" width="200" />
-  <img src="../suport/DB_home.png" alt="交易介面" width="200" />
+  <img src="../support/DB_Login.png" alt="登錄介面" width="200" />
+  <img src="../support/DB_Home.png" alt="交易介面" width="200" />
 </p>
 
 ## 檔案說明
