@@ -26,21 +26,20 @@
    ```bash
    git clone https://github.com/herbert1018/University-Projects.git
    ```
-
 2. 進入某個子資料夾（例如 Internet_app_design），查看裡面的專案與說明檔。
-
 3. 每個子資料夾都有自己的 README.md，裡面會有該專案的執行方式、需求、架構圖、使用技術等說明。
 
 ## 技術棧
 
 - 語言：C++、Python、 JavaScript、 HTML / CSS
-
 - Web：Node.js、Express
-
 - 資料庫：MySQL、HeidiSQL
-
 - 通訊 / 協定：Python Socket、 MQTT、Node-Red
-
-- 嵌入式 / IoT：NodeMCU-32、RC522 IC卡感應模組、KY-025 磁簧開關
-
+- 開發版：NodeMCU-32
 - 工具 / 平台：Git、VS Code、MQTTX、circuitverse
+
+## 關於我 / 說明
+
+- 作者：herbert1018
+- 聯絡方式：herbert102921017@gmail.com
+- 本儲存庫僅作為作品集展示，盡量但不保證每個專案都能在所有環境下直接執行

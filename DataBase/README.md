@@ -1,7 +1,8 @@
 # Database System – 期末專案
 
 ## 專案簡介
-本專案為「資料庫系統」課程的期末專題，內容涵蓋 **使用 Node.js 建立後端伺服器**，並搭配 SQL 資料庫進行使用者登入、註冊與基本介面操作。
+本專案為「資料庫系統」課程的期末專題，內容涵蓋 **使用 Node.js 建立後端伺服器**，
+並搭配 MySQL 資料庫進行使用者登入、註冊與交易等基本介面操作。
 
 ## 檔案說明
 - `server.js`：Node.js 後端伺服器程式  
@@ -14,16 +15,20 @@
 - `package-lock.json`：NPM 依賴管理檔  
 
 ## 執行方式
+1. 解壓縮模組壓縮檔
 ```bash
-# 解壓縮 node_modules.zip
 unzip node_modules.zip -d node_modules
-
-# 啟動伺服器
-node server.js
-伺服器啟動後，可在瀏覽器訪問 http://localhost:3000 查看網站。
 ```
+2. 以資料庫管理工具開啟`com.sql`(本專案使用MySQL)
+3. 啟動伺服器
+```bash
+node server.js
+```
+3. 伺服器啟動後，可在瀏覽器訪問 http://localhost:3000 查看網站  
+4. 網站可供登陸、註冊、修改個資、上下架商品、購買與排序功能
 
 ## 專案特色
 - 使用 Node.js + Express 建立後端
 - 前後端分離：HTML/CSS 前端與 Node.js 後端結合
-- SQL 資料庫進行使用者資料管理
+- 使用"佔位符"防資料庫注入攻擊
+- MySQL 資料庫進行使用者資料管理
