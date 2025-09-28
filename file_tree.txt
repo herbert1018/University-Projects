@@ -1,0 +1,47 @@
+列出磁碟區 Data 的資料夾 PATH
+磁碟區序號為 B0DD-17AD
+D:.
+│  .gitignore
+│  file_tree.txt
+│  README.md
+│  
+├─.vscode
+│      settings.json
+│      
+├─Computer_Organization
+│      Demo.png
+│      max subarray.cpp
+│      README.md
+│      __maxSubarray__F.cv
+│      計算機組織 - 期末專題.pptx
+│      
+├─DataBase
+│  │  com.sql
+│  │  node_modules.zip
+│  │  package-lock.json
+│  │  README.md
+│  │  server.js
+│  │  資料庫系統_期末報告.pptx
+│  │  
+│  └─public
+│          home.html
+│          home_style.css
+│          login_register.html
+│          style.css
+│          
+├─Internet_app_design
+│      font.ttf
+│      README.md
+│      tcp-ip期末專題.pptx
+│      test.py
+│      
+└─IoT
+    │  database.txt
+    │  DemoVideo.mp4
+    │  flows.json
+    │  README.md
+    │  捷運站驗票閘門.pdf
+    │  
+    └─MRT_Gate
+            MRT_Gate.ino
+            
