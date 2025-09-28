@@ -24,5 +24,5 @@
 
 ## 專案特色
 - 使用 Dynamic programming 演算法解決最大子陣列問題
-![C++演算法圖](../suport/CO_Algorithm.png)
+![C++演算法圖](../support/CO_Algorithm.png)
 - 透過圖示與簡報說明演算法流程
