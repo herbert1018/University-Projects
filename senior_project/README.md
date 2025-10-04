@@ -4,13 +4,21 @@
 本專案為期末專題的程式碼部分，而資料集因為與義大醫院合作並通過IRB，因去識別且不公開原則所以無法放上來
 
 - **影像處理與分析**：包括訓練資料集分類、遮罩生成、圖像裁切、圖像過濾雜訊、統計分析。
-- **深度學習模型實作與測試**：包括 AlexNet、ResNet、DeepLabV3、EfficientNetB0、RepVGG 與 UNet 模型。
+- **深度學習模型實作與測試**：包括 AlexNet、ResNet、EfficientNetB0、RepVGG、DeepLabV3 與 UNet 模型。
 - **GUI 支援**：提供簡易圖形介面方便操作，包括一鍵訓練、監測指標、驗證結果。
 - **實驗與測試**：每個模型均附有測試程式 `test_window.py` 用於快速驗證。
 
+| ![影像處理GUI](../support/process_GUI.png) | ![深度學習訓練GUI](../support/train_GUI.png) |
+|:--:|:--:|
+| 圖一、影像處理GUI | 圖二、深度學習訓練GUI |
+
+| ![分類模型測試GUI](../support/class_GUI.png) | ![分割模型測試GUI](../support/segment_GUI.png) |
+|:--:|:--:|
+| 圖三、分類模型測試GUI | 圖四、分割模型測試GUI |
+
 ---
 
-## 資料夾與檔案說明
+## 資料夾與檔案說明(依字母順序)
 
 ### 1. `alexnet`
 - **功能**：實作經典卷積神經網路 AlexNet。
