@@ -241,6 +241,7 @@
 
         let currentModel = 'good';
         let testMaskVisible = false;
+        let valMaskVisible = false;
         let showComponents = false;
         let componentVisibility = [];
 
@@ -453,7 +454,7 @@
                     color = '#FF9800';
                 }
             }
-            // 根據遮罩狀態決定是否顯示Test loss
+            // 根據遮罩狀態決定是否顯示 Test loss
             const testLossText = testMaskVisible ? '???' : le.toFixed(4);
             document.getElementById('status').innerHTML =
                 `<span style="color: black;">${currentModel.toUpperCase()} / Train ${lt.toFixed(4)} / Val ${lv.toFixed(4)} / Test ${testLossText} / </span>` +
@@ -509,58 +510,84 @@
                 }
             }
 
-            // 添加遮罩
-            if (testMaskVisible) {
-                traces.push({
-                    x: [2, 4, 4, 2, 2],
-                    y: [-3.5, -3.5, 3.5, 3.5, -3.5],
-                    fill: 'toself',
-                    fillcolor: 'rgba(128, 128, 128, 1)',
+            // 建立 shapes 陣列
+            const shapes = [
+                {
+                    type: 'rect',
+                    xref: 'x',
+                    yref: 'paper',
+                    x0: -3,
+                    x1: -2,
+                    y0: 0,
+                    y1: 1,
+                    fillcolor: 'orange',
+                    opacity: 0.15,
                     line: { width: 0 },
-                    showlegend: false,
-                    hoverinfo: 'skip'
+                    layer: 'below'
+                },
+                {
+                    type: 'rect',
+                    xref: 'x',
+                    yref: 'paper',
+                    x0: -2,
+                    x1: 2,
+                    y0: 0,
+                    y1: 1,
+                    fillcolor: 'blue',
+                    opacity: 0.15,
+                    line: { width: 0 },
+                    layer: 'below'
+                },
+                {
+                    type: 'rect',
+                    xref: 'x',
+                    yref: 'paper',
+                    x0: 2,
+                    x1: 4,
+                    y0: 0,
+                    y1: 1,
+                    fillcolor: 'red',
+                    opacity: 0.15,
+                    line: { width: 0 },
+                    layer: 'below'
+                }
+            ];
+
+            // 添加遮罩到 shapes（最上層）
+            if (testMaskVisible) {
+                shapes.push({
+                    type: 'rect',
+                    xref: 'x',
+                    yref: 'y',
+                    x0: 2,
+                    x1: 4,
+                    y0: -3.5,
+                    y1: 3.5,
+                    fillcolor: 'rgb(128, 128, 128)',
+                    line: { width: 0 },
+                    layer: 'above',
+                    opacity: 1
+                });
+            }
+
+            if (valMaskVisible) {
+                shapes.push({
+                    type: 'rect',
+                    xref: 'x',
+                    yref: 'y',
+                    x0: -3,
+                    x1: -2,
+                    y0: -3.5,
+                    y1: 3.5,
+                    fillcolor: 'rgb(128, 128, 128)',
+                    line: { width: 0 },
+                    layer: 'above',
+                    opacity: 1
                 });
             }
 
             const layout = {
-                shapes: [
-                    {
-                        type: 'rect',
-                        xref: 'x',
-                        yref: 'paper',
-                        x0: -3,
-                        x1: -2,
-                        y0: 0,
-                        y1: 1,
-                        fillcolor: 'orange',
-                        opacity: 0.15,
-                        line: { width: 0 }
-                    },
-                    {
-                        type: 'rect',
-                        xref: 'x',
-                        yref: 'paper',
-                        x0: -2,
-                        x1: 2,
-                        y0: 0,
-                        y1: 1,
-                        fillcolor: 'blue',
-                        opacity: 0.15,
-                        line: { width: 0 }
-                    },
-                    {
-                        type: 'rect',
-                        xref: 'x',
-                        yref: 'paper',
-                        x0: 2,
-                        x1: 4,
-                        y0: 0,
-                        y1: 1,
-                        fillcolor: 'red',
-                        opacity: 0.15,
-                        line: { width: 0 }
-                    }
-                ],
+                shapes: shapes,
                 annotations: [
                     {
                         x: -2.5,
@@ -643,6 +670,7 @@
         // 按鈕功能
         function toggleTestMask() {
             testMaskVisible = !testMaskVisible;
+            valMaskVisible = testMaskVisible;
             updatePlot();
         }
 
