@@ -199,10 +199,10 @@
                 <div class="info-box">
                     <strong>過擬合演示</strong><br>
                     1. 切換範例<br>
-                    2. Fit Best自動最佳化<br><br>
+                    2. 訓練集是否最佳化如何影響結果<br><br>
                     觀察：<br>
-                    • Good: 最佳解<br>
-                    • Overfit: 過擬合
+                    • Good Model: 最佳解例子<br>
+                    • Overfit Model: 過擬合例子
                 </div>
 
                 <div class="radio-group">
@@ -216,10 +216,10 @@
                     </label>
                 </div>
 
-                <button class="btn-blue" onclick="toggleTestMask()">遮擋Test區域</button>
+                <button class="btn-coral" onclick="resetSliders()">Reset</button>
+                <button class="btn-blue" onclick="toggleTestMask()">切換訓練狀態</button>
                 <button class="btn-purple" onclick="toggleComponents()">切換頻率顯示</button>
                 <button class="btn-green" onclick="fitBest()">Train最佳化</button>
-                <button class="btn-coral" onclick="resetSliders()">Reset</button>
                 <button class="btn-steel hidden" id="presetBtn" onclick="applyPreset()">相對最佳化</button>
             </div>
 
