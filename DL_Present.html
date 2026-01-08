@@ -237,7 +237,7 @@
         const xTrain = linspace(-2, 2, 200);
         const xVal = linspace(-3, -2, 50);
         const xTest = linspace(2, 4, 100);
-        const xFull = linspace(-3, 4, 500);
+        const xFull = linspace(-8, 8, 1200);
 
         let currentModel = 'good';
         let testMaskVisible = false;
@@ -510,8 +510,23 @@
                 }
             }
 
-            // 建立 shapes 陣列
             const shapes = [
+                // ===== 完全沒看過（左）=====
+                {
+                    type: 'rect',
+                    xref: 'x',
+                    yref: 'paper',
+                    x0: -8,
+                    x1: -3,
+                    y0: 0,
+                    y1: 1,
+                    fillcolor: 'gray',
+                    opacity: 0.08,
+                    line: { width: 0 },
+                    layer: 'below'
+                },
+
+                // ===== Validation =====
                 {
                     type: 'rect',
                     xref: 'x',
@@ -525,6 +540,8 @@
                     line: { width: 0 },
                     layer: 'below'
                 },
+
+                // ===== Train =====
                 {
                     type: 'rect',
                     xref: 'x',
@@ -538,6 +555,8 @@
                     line: { width: 0 },
                     layer: 'below'
                 },
+
+                // ===== Test =====
                 {
                     type: 'rect',
                     xref: 'x',
@@ -548,6 +567,21 @@
                     y1: 1,
                     fillcolor: 'red',
                     opacity: 0.15,
+                    line: { width: 0 },
+                    layer: 'below'
+                },
+
+                // ===== 完全沒看過（右）=====
+                {
+                    type: 'rect',
+                    xref: 'x',
+                    yref: 'paper',
+                    x0: 4,
+                    x1: 8,
+                    y0: 0,
+                    y1: 1,
+                    fillcolor: 'gray',
+                    opacity: 0.08,
                     line: { width: 0 },
                     layer: 'below'
                 }
@@ -587,8 +621,29 @@
             }
 
             const layout = {
+                dragmode: 'pan',
                 shapes: shapes,
                 annotations: [
+                    {
+                        x: -6,
+                        y: 3.0,
+                        text: '<b>Unseen Region</b>',
+                        showarrow: false,
+                        font: { size: 13, color: '#666' },
+                        bgcolor: 'rgba(255,255,255,0.85)',
+                        bordercolor: '#999',
+                        borderwidth: 1
+                    },
+                    {
+                        x: 6,
+                        y: 3.0,
+                        text: '<b>Unseen Region</b>',
+                        showarrow: false,
+                        font: { size: 13, color: '#666' },
+                        bgcolor: 'rgba(255,255,255,0.85)',
+                        bordercolor: '#999',
+                        borderwidth: 1
+                    },
                     {
                         x: -2.5,
                         y: 3.0,
@@ -625,7 +680,9 @@
                 ],
                 xaxis: {
                     title: 'x',
-                    range: [-3.2, 4.2],
+                    autorange: false,
+                    range: [-3, 4],      // 初始顯示範圍
+                    fixedrange: false,  // 允許左右拖曳、縮放
                     gridcolor: '#e0e0e0'
                 },
                 yaxis: {
